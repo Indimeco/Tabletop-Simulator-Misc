@@ -22,7 +22,6 @@ function onLoad(save_state)
 
     local saveStrings = JSON.decode(save_state)
     if saveStrings == nil then
-        print('Initializing')
         above = ''
         below = ''
         starting = self.getDescription()
@@ -93,10 +92,15 @@ function scrollDown()
         local tempPage = string.sub(self.getDescription(),string.len(newPage)+1,-1)
         if tempPage ~= '' then
             newPage = getPage(removeNewline(removeNewline(tempPage..'\n'..below,'Ending'),'Beginning'))
+            if string.len(newPage) < string.len(tempPage) then
+                tempPage = removeNewline(removeNewline(tempPage,'Ending'),'Beginning')
+            else
+                tempPage = ''
+            end
         else
+            tempPage = ''
             newPage = getPage(removeNewline(removeNewline(below,'Ending'),'Beginning'))
         end
-
         local extraLength1 = getLines(self.getDescription())
         local tempStartingText = getLines(starting)
         self.setDescription(removeNewline(removeNewline(newPage,'Beginning'),'Ending'))
@@ -106,10 +110,10 @@ function scrollDown()
         starting = self.getDescription()
         if extraLength2 > 0 and extraLength4 <= extraLength3['lineCount'] and extraLength4 > 0 then
             local extraLength5 = extraLength3[extraLength4]
-            below = removeNewline(string.sub(below,extraLength5+1),'Beginning')
+            below = removeNewline(string.sub(tempPage..below,extraLength5+1),'Beginning')
         else
             if string.len(self.getDescription()) ~= string.len(below) then
-                below = removeNewline(removeNewline(string.sub(below,string.len(self.getDescription())+1),'Beginning'),'Ending')
+                below = removeNewline(removeNewline(string.sub(tempPage..below,string.len(self.getDescription())+1),'Beginning'),'Ending')
             else
                 below = ''
             end
