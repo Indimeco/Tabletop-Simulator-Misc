@@ -1,43 +1,45 @@
 function onLoad(save_state)
+    -- The scrollbars use four buttons, 2 do-nothing buttons that only show the arrow and two functional, but hidden buttons.
     local button_parameters = {}
-        button_parameters.click_function = 'scrollDown'
-        button_parameters.function_owner = self
-        button_parameters.label = ''
-        button_parameters.position = {-0.38,0,-0.35}
-        button_parameters.rotation = {0,90,0}
-        button_parameters.width = 1
-        button_parameters.height = 1
-        button_parameters.font_size = 1
-        self.createButton( button_parameters )
-        button_parameters.click_function = 'placeHolder'
-        button_parameters.function_owner = self
-        button_parameters.label = '<'
-        button_parameters.position = {-0.46,5,-0.45}
-        button_parameters.rotation = {0,90,0}
-        button_parameters.width = 0
-        button_parameters.height = 0
-        button_parameters.font_size = 70
-        self.createButton( button_parameters )
+    button_parameters.click_function = 'scrollDown'
+    button_parameters.function_owner = self
+    button_parameters.label = ''
+    button_parameters.position = {-0.38,0,-0.35}
+    button_parameters.rotation = {0,90,0}
+    button_parameters.width = 1
+    button_parameters.height = 1
+    button_parameters.font_size = 1
+    self.createButton( button_parameters )
+    button_parameters.click_function = 'placeHolder'
+    button_parameters.function_owner = self
+    button_parameters.label = '<'
+    button_parameters.position = {-0.46,5,-0.45}
+    button_parameters.rotation = {0,90,0}
+    button_parameters.width = 0
+    button_parameters.height = 0
+    button_parameters.font_size = 70
+    self.createButton( button_parameters )
 
-        button_parameters.click_function = 'scrollUp'
-        button_parameters.function_owner = self
-        button_parameters.label = ''
-        button_parameters.position = {-0.38,0,0.35}
-        button_parameters.rotation = {0,-90,0}
-        button_parameters.width = 1
-        button_parameters.height = 1
-        button_parameters.font_size = 1
-        self.createButton( button_parameters )
-        button_parameters.click_function = 'placeHolder'
-        button_parameters.function_owner = self
-        button_parameters.label = '<'
-        button_parameters.position = {-0.46,5,0.45}
-        button_parameters.rotation = {0,-90,0}
-        button_parameters.width = 0
-        button_parameters.height = 0
-        button_parameters.font_size = 70
-        self.createButton( button_parameters )
+    button_parameters.click_function = 'scrollUp'
+    button_parameters.function_owner = self
+    button_parameters.label = ''
+    button_parameters.position = {-0.38,0,0.35}
+    button_parameters.rotation = {0,-90,0}
+    button_parameters.width = 1
+    button_parameters.height = 1
+    button_parameters.font_size = 1
+    self.createButton( button_parameters )
+    button_parameters.click_function = 'placeHolder'
+    button_parameters.function_owner = self
+    button_parameters.label = '<'
+    button_parameters.position = {-0.46,5,0.45}
+    button_parameters.rotation = {0,-90,0}
+    button_parameters.width = 0
+    button_parameters.height = 0
+    button_parameters.font_size = 70
+    self.createButton( button_parameters )
 
+    -- Takes the above and below information from the encoded JSON string and turns them into usable variables.
     local saveStrings = JSON.decode(save_state)
     if saveStrings == nil then
         above = ''
@@ -46,9 +48,10 @@ function onLoad(save_state)
     else
         above = saveStrings['above']
         below = saveStrings['below']
-        starting = saveStrings['starting']
+        starting = saveStrings['starting'] -- The text before it becomes altered by the user, updated after a scroll function completes.
     end
 
+    -- Table describes the math of all characters on the standard English keyboard and their estimated width where a full line = 100,000
     characterWidthTable = {
     ['`'] = 2381, ['~'] = 2381, ['1'] = 1724, ['!'] = 1493, ['2'] = 2381,
     ['@'] = 4348, ['3'] = 2381, ['#'] = 3030, ['4'] = 2564, ['$'] = 2381,
@@ -73,7 +76,7 @@ function onLoad(save_state)
 }
 end
 
-function onSave()
+function onSave() -- Saves the text data to be encoded and preserved.
     local saveTable = {}
     saveTable['above'] = above
     saveTable['below'] = below
@@ -83,17 +86,18 @@ end
 
 function scrollUp()
     if above ~= '' then
-        local newPage = string.reverse(getPage(string.reverse(above)))..'\n'
+        local newPage = string.reverse(getPage(string.reverse(above)))
         if self.getDescription() ~= '' then
             local i = string.len(newPage)
-            newPage = getPage(newPage..self.getDescription())
-            local j = string.len(newPage)
+            local tempPage = getPage(removeNewline(removeNewline(newPage..'\n'..preserveNewline(self.getDescription()),'Ending'),'Beginning'))
+            local j = string.len(tempPage)
             if i < j then
-                above = removeNewline(plainReplace(above,string.sub(newPage,1,i-1),''),'Ending')
-                below = removeNewline(removeNewline(plainReplace(self.getDescription(),string.sub(newPage,i+1,j),'')..'\n'..below,'Beginning'),'Ending')
+                newPage = tempPage
+                above = removeNewline(removeNewline(plainReplace(above,string.sub(newPage,1,i),''),'Ending'),'Beginning')
+                below = removeNewline(removeNewline(plainReplace(preserveNewline(self.getDescription()),removeNewline(string.sub(newPage,i+1,j),'Beginning'),'')..'\n'..below,'Beginning'),'Ending')
             else
-                above = removeNewline(plainReplace(above,newPage,''),'Ending')
-                below = removeNewline(self.getDescription()..'\n'..below,'Ending')
+                above = removeNewline(plainReplace(above,removeNewline(removeNewline(newPage,'Ending'),'Beginning'),''),'Ending')
+                below = removeNewline(removeNewline(preserveNewline(self.getDescription())..'\n'..below,'Ending'),'Beginning')
             end
         else
             above = removeNewline(plainReplace(above,removeNewline(removeNewline(newPage,'Ending'),'Beginning'),''),'Ending')
@@ -105,21 +109,19 @@ end
 
 function scrollDown()
     if self.getDescription() ~= '' or below ~= '' then
-        local newPage = getPage(self.getDescription())
+        local newPage = getPage(preserveNewline(self.getDescription()))
         above = removeNewline(above..'\n'..newPage,'Beginning')
-        local tempPage = string.sub(self.getDescription(),string.len(newPage)+1,-1)
+        local tempPage = string.sub(preserveNewline(self.getDescription()),string.len(newPage)+1,-1)
         if tempPage ~= '' then
             newPage = getPage(removeNewline(removeNewline(tempPage..'\n'..below,'Ending'),'Beginning'))
-            if string.len(newPage) < string.len(tempPage) then
-                tempPage = removeNewline(removeNewline(tempPage,'Ending'),'Beginning')
-            else
+            if string.len(newPage) > string.len(tempPage) then
                 tempPage = ''
             end
         else
             tempPage = ''
             newPage = getPage(removeNewline(removeNewline(below,'Ending'),'Beginning'))
         end
-        local extraLength1 = getLines(self.getDescription())
+        local extraLength1 = getLines(preserveNewline(self.getDescription()))
         local tempStartingText = getLines(starting)
         self.setDescription(removeNewline(removeNewline(newPage,'Beginning'),'Ending'))
         local extraLength2 = extraLength1['lineCount'] - tempStartingText['lineCount']
@@ -131,7 +133,7 @@ function scrollDown()
             below = removeNewline(string.sub(tempPage..below,extraLength5+1),'Beginning')
         else
             if string.len(self.getDescription()) ~= string.len(below) then
-                below = removeNewline(removeNewline(string.sub(tempPage..below,string.len(self.getDescription())+1),'Beginning'),'Ending')
+                below = removeNewline(removeNewline(string.sub(tempPage..below,string.len(self.getDescription())+2),'Ending'),'Beginning')
             else
                 below = ''
             end
@@ -139,8 +141,7 @@ function scrollDown()
     end
 end
 
-function getPage(invStr)
--- Iterates through the str and sums the estimated line length based on characterWidthTable for each character in a max 100000 system. Margin for error is 200.
+function getPage(invStr) -- Iterates through the str and sums the estimated line length based on characterWidthTable for each character in a max 100000 system. Margin for error is 200.
     local lineWidth = 0
     local lineCount = 0
     local placeholder = 1
@@ -170,8 +171,7 @@ function getPage(invStr)
     return page
 end
 
-function getLines(str)
-    -- Returns a table countaining the number of lines in a string as well as the location of the end of each line.
+function getLines(str) -- Returns a table countaining the number of lines in a string as well as the location of the end of each line.
     local lineWidth = 0
     local lineCount = 0
     local length = string.len(str)
@@ -204,7 +204,7 @@ function getLines(str)
     return lineTable
 end
 
-function removeNewline(str, location)
+function removeNewline(str, location) -- Takes a string and chops off all the newlines it can find, given the direction, until it hits text.
     if location == 'Beginning' then
         while string.sub(str,1,1) == '\n' do
             str = string.sub(str,2,-1)
@@ -218,7 +218,21 @@ function removeNewline(str, location)
     end
 end
 
-function getFullText()
+function preserveNewline(str) -- A variant on the plainReplace function designed to prevent the destruction of user-made newlines.
+    local z = 1
+    while true do
+        local x,y = str:find('\n\n',z,true)
+        if x==nil then
+           break
+       elseif str:sub(x-1,y+2) ~= '\n \n' then
+           str = str:sub(1,x-1)..'\n \n'..str:sub(y+1)
+        end
+        z = y+1
+    end
+    return str
+end
+
+function getFullText() -- returns the complete string of data for a card.
     local fullText = self.getDescription()
     if above ~= '' then
         fullText = above..'\n'..fullText
@@ -229,7 +243,7 @@ function getFullText()
     return fullText
 end
 
-function plainReplace(str, pattern, replacement)
+function plainReplace(str, pattern, replacement) -- Takes a string changes the pattern within it to the replacement.
     local x,y = str:find(pattern,1,true)
     if x==nil then
        return str
