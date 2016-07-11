@@ -123,13 +123,13 @@ function scrollDown()
         end
         local extraLength1 = getLines(preserveNewline(self.getDescription()))
         local tempStartingText = getLines(starting)
-        self.setDescription(removeNewline(removeNewline(newPage,'Beginning'),'Ending'))
         local extraLength2 = extraLength1['lineCount'] - tempStartingText['lineCount']
         local extraLength3 = getLines(below)
         local extraLength4 = tempStartingText['lineCount'] - extraLength2
+        local extraLength5 = extraLength3[extraLength4]
+        self.setDescription(removeNewline(removeNewline(newPage,'Beginning'),'Ending'))
         starting = self.getDescription()
-        if extraLength2 > 0 and extraLength4 <= extraLength3['lineCount'] and extraLength4 > 0 then
-            local extraLength5 = extraLength3[extraLength4]
+        if extraLength2 > 0 and extraLength4 <= extraLength3['lineCount'] and extraLength4 > 0 and extraLength5 ~= nil then
             below = removeNewline(string.sub(tempPage..below,extraLength5+1),'Beginning')
         else
             if string.len(self.getDescription()) ~= string.len(below) then
