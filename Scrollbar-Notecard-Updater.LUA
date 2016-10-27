@@ -96,58 +96,67 @@ function onSave() -- Saves the text data to be encoded and preserved.
     return JSON.encode(saveTable)
 end
 
-function scrollUp()
+function scrollUp(obj,color)
     if above ~= '' then
-        local newPage = string.reverse(getPage(string.reverse(above)))
-        if self.getDescription() ~= '' then
-            local i = string.len(newPage)
-            local tempPage = getPage(removeNewline(removeNewline(newPage..'\n'..preserveNewline(self.getDescription()),'Ending'),'Beginning'))
-            local j = string.len(tempPage)
-            if i < j then
-                newPage = tempPage
-                above = removeNewline(removeNewline(plainReplace(above,string.sub(newPage,1,i),''),'Ending'),'Beginning')
-                below = removeNewline(removeNewline(plainReplace(preserveNewline(self.getDescription()),removeNewline(string.sub(newPage,i+1,j),'Beginning'),'')..'\n'..below,'Beginning'),'Ending')
+        local verifyCharacters = getPage(self.getDescription())
+        if type(verifyCharacters) == 'table' then -- getPage() returns a table when it encounters a character that doesn't exist within the characterWidthTable.
+            printToColor('Unrecognized character: "'..verifyCharacters[1]..'" in scrollbar notecard "'..self.getName()..'"\nPlease delete it.',color,{1,0.2,0.2})
+        else
+            local newPage = string.reverse(getPage(string.reverse(above)))
+            if self.getDescription() ~= '' then
+                local i = string.len(newPage)
+                local tempPage = getPage(removeNewline(removeNewline(newPage..'\n'..preserveNewline(self.getDescription()),'Ending'),'Beginning'))
+                local j = string.len(tempPage)
+                if i < j then
+                    newPage = tempPage
+                    above = removeNewline(removeNewline(plainReplace(above,string.sub(newPage,1,i),''),'Ending'),'Beginning')
+                    below = removeNewline(removeNewline(plainReplace(preserveNewline(self.getDescription()),removeNewline(string.sub(newPage,i+1,j),'Beginning'),'')..'\n'..below,'Beginning'),'Ending')
+                else
+                    above = removeNewline(plainReplace(above,removeNewline(removeNewline(newPage,'Ending'),'Beginning'),''),'Ending')
+                    below = removeNewline(removeNewline(preserveNewline(self.getDescription())..'\n'..below,'Ending'),'Beginning')
+                end
             else
                 above = removeNewline(plainReplace(above,removeNewline(removeNewline(newPage,'Ending'),'Beginning'),''),'Ending')
-                below = removeNewline(removeNewline(preserveNewline(self.getDescription())..'\n'..below,'Ending'),'Beginning')
             end
-        else
-            above = removeNewline(plainReplace(above,removeNewline(removeNewline(newPage,'Ending'),'Beginning'),''),'Ending')
+            self.setDescription(removeNewline(removeNewline(newPage,'Ending'),'Beginning'))
+            starting = self.getDescription()
         end
-        self.setDescription(removeNewline(removeNewline(newPage,'Ending'),'Beginning'))
-        starting = self.getDescription()
     end
 end
 
-function scrollDown()
+function scrollDown(obj,color)
     if self.getDescription() ~= '' or below ~= '' then
         local newPage = getPage(preserveNewline(self.getDescription()))
-        above = removeNewline(above..'\n'..newPage,'Beginning')
-        local tempPage = string.sub(preserveNewline(self.getDescription()),string.len(newPage)+1,-1)
-        if tempPage ~= '' then
-            newPage = getPage(removeNewline(removeNewline(tempPage..'\n'..below,'Ending'),'Beginning'))
-            if string.len(newPage) > string.len(tempPage) then
-                tempPage = ''
-            end
+        if type(newPage) == 'table' then -- getPage() returns a table when it encounters a character that doesn't exist within the characterWidthTable.
+            printToColor('Unrecognized character: "'..newPage[1]..'" in scrollbar notecard "'..self.getName()..'"\nPlease delete it.',color,{1,0.2,0.2})
         else
-            tempPage = ''
-            newPage = getPage(removeNewline(removeNewline(below,'Ending'),'Beginning'))
-        end
-        local extraLength1 = getLines(preserveNewline(self.getDescription()))
-        local tempStartingText = getLines(starting)
-        local extraLength2 = extraLength1['lineCount'] - tempStartingText['lineCount']
-        local extraLength3 = getLines(below)
-        local extraLength4 = tempStartingText['lineCount'] - extraLength2
-        local extraLength5 = extraLength3[extraLength4]
-        self.setDescription(removeNewline(removeNewline(newPage,'Beginning'),'Ending'))
-        starting = self.getDescription()
-        if extraLength2 > 0 and extraLength4 <= extraLength3['lineCount'] and extraLength4 > 0 and extraLength5 ~= nil then
-            below = removeNewline(string.sub(tempPage..below,extraLength5+1),'Beginning')
-        else
-            if string.len(self.getDescription()) ~= string.len(below) then
-                below = removeNewline(removeNewline(string.sub(tempPage..below,string.len(self.getDescription())+2),'Ending'),'Beginning')
+            above = removeNewline(above..'\n'..newPage,'Beginning')
+            local tempPage = string.sub(preserveNewline(self.getDescription()),string.len(newPage)+1,-1)
+            if tempPage ~= '' then
+                newPage = getPage(removeNewline(removeNewline(tempPage..'\n'..below,'Ending'),'Beginning'))
+                if string.len(newPage) > string.len(tempPage) then
+                    tempPage = ''
+                end
             else
-                below = ''
+                tempPage = ''
+                newPage = getPage(removeNewline(removeNewline(below,'Ending'),'Beginning'))
+            end
+            local extraLength1 = getLines(preserveNewline(self.getDescription()))
+            local tempStartingText = getLines(starting)
+            local extraLength2 = extraLength1['lineCount'] - tempStartingText['lineCount']
+            local extraLength3 = getLines(below)
+            local extraLength4 = tempStartingText['lineCount'] - extraLength2
+            local extraLength5 = extraLength3[extraLength4]
+            self.setDescription(removeNewline(removeNewline(newPage,'Beginning'),'Ending'))
+            starting = self.getDescription()
+            if extraLength2 > 0 and extraLength4 <= extraLength3['lineCount'] and extraLength4 > 0 and extraLength5 ~= nil then
+                below = removeNewline(string.sub(tempPage..below,extraLength5+1),'Beginning')
+            else
+                if string.len(self.getDescription()) ~= string.len(below) then
+                    below = removeNewline(removeNewline(string.sub(tempPage..below,string.len(self.getDescription())+2),'Ending'),'Beginning')
+                else
+                    below = ''
+                end
             end
         end
     end
@@ -165,6 +174,9 @@ function getPage(invStr) -- Iterates through the str and sums the estimated line
         if key == '' then
             page = page..string.sub(invStr,placeholder,i)
             break
+        end
+        if characterWidthTable[key] == nil then
+            return {key}
         end
         lineWidth = lineWidth + characterWidthTable[key]
         if lineWidth > 99878 then
