@@ -98,14 +98,18 @@ end
 
 function scrollDown(obj,color)
     if self.getDescription() ~= '' or below ~= '' then
-        local newPage = getPage(preserveNewline(self.getDescription()))
-        if type(newPage) == 'table' then -- getPage() returns a table when it encounters a character that doesn't exist within the characterWidthTable.
-            printToColor('Unrecognized character: "'..newPage[1]..'" in scrollbar notecard "'..self.getName()..'"\nPlease delete it.',color,{1,0.2,0.2})
+        local abovePage = getPage(preserveNewline(self.getDescription()))
+        local newPage
+        if type(abovePage) == 'table' then -- getPage() returns a table when it encounters a character that doesn't exist within the characterWidthTable.
+            printToColor('Unrecognized character: "'..abovePage[1]..'" in scrollbar notecard "'..self.getName()..'"\nPlease delete it.',color,{1,0.2,0.2})
         else
-            above = removeNewline(above..'\n'..newPage,'Beginning')
-            local tempPage = string.sub(preserveNewline(self.getDescription()),string.len(newPage)+1,-1)
+            local tempPage = string.sub(preserveNewline(self.getDescription()),string.len(abovePage)+1,-1)
             if tempPage ~= '' then
                 newPage = getPage(removeNewline(removeNewline(tempPage..'\n'..below,'Ending'),'Beginning'))
+                if type(newPage) == 'table' then
+                    printToColor('Unrecognized character: "'..newPage[1]..'" in scrollbar notecard "'..self.getName()..'"\nPlease delete it.',color,{1,0.2,0.2})
+                    return 0
+                end
                 if string.len(newPage) > string.len(tempPage) then
                     tempPage = ''
                 end
@@ -113,6 +117,8 @@ function scrollDown(obj,color)
                 tempPage = ''
                 newPage = getPage(removeNewline(removeNewline(below,'Ending'),'Beginning'))
             end
+            above = removeNewline(above..'\n'..abovePage,'Beginning')
+
             local extraLength1 = getLines(preserveNewline(self.getDescription()))
             local tempStartingText = getLines(starting)
             local extraLength2 = extraLength1['lineCount'] - tempStartingText['lineCount']
