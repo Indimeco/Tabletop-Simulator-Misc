@@ -45,7 +45,7 @@ function onLoad(save_state)
         ['T'] = 2381, ['y'] = 2564, ['Y'] = 2564, ['u'] = 2564, ['U'] = 3030,
         ['i'] = 1282, ['I'] = 1282, ['o'] = 2381, ['O'] = 3226, ['p'] = 2564,
         ['P'] = 2564, ['['] = 1724, ['{'] = 1724, [']'] = 1724, ['}'] = 1724,
-        ['|'] = 1493, ['\\'] = 1923, ['a'] = 2564, ['A'] = 2777, ['s'] = 1923,
+        ['|'] = 1493, ['\\'] = 1923,['a'] = 2564, ['A'] = 2777, ['s'] = 1923,
         ['S'] = 2381, ['d'] = 2564, ['D'] = 3030, ['f'] = 1724, ['F'] = 2381,
         ['g'] = 2564, ['G'] = 2777, ['h'] = 2564, ['H'] = 3030, ['j'] = 1075,
         ['J'] = 1282, ['k'] = 2381, ['K'] = 2777, ['l'] = 1282, ['L'] = 2174,
@@ -54,6 +54,12 @@ function onLoad(save_state)
         ['v'] = 2564, ['V'] = 2777, ['b'] = 2564, ['B'] = 2564, ['n'] = 2564,
         ['N'] = 3226, ['m'] = 3846, ['M'] = 3846, [','] = 1282, ['<'] = 2174,
         ['.'] = 1282, ['>'] = 2174, ['/'] = 1923, ['?'] = 2174, [' '] = 1282,
+        [string.char(196)]  = 2777, [string.char(197)]  = 2777, -- capital A with diaeresis above, capital A with circle above
+        [string.char(228)]  = 2777, [string.char(229)]  = 2777, -- small A with diaeresis above, small A with circle above
+        [string.char(214)]  = 3226, [string.char(213)]  = 3226, -- capital O with diaeresis, capital O with tilde
+        [string.char(246)]  = 2381, [string.char(245)]  = 2381, -- small O with diaeresis, small O with tilde
+        [string.char(220)]  = 3030, [string.char(252)]  = 2564, -- capital U with diaeresis, small U with diaeresis
+        [string.char(223)]  = 2777, [string.char(233)]  = 2174, -- latin small sharp S, small e with acute
         [string.char(8220)] = 1923, [string.char(8221)] = 1923, [string.char(8217)] = 1075, -- left quotes, right quotes, apostrophe
         [string.char(8226)] = 1493,                                                         -- bullet point
         ['\t'] = 5128, ['\r'] = 0, ['\n'] = 100000
